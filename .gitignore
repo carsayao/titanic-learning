@@ -1,0 +1,6 @@
+# Our virtual environment
+env/
+# Swaps
+*.sw*
+__pycache__
+.vscode/
