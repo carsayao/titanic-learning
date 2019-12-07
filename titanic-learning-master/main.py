@@ -1,8 +1,11 @@
+# Absolutely necessary
 import pandas as pd
 import numpy as np
-import csv
 import perceptron
 import enum
+
+# Lazy algorithms
+from sklearn.svm import SVC
 
 # The only important aspect of each passenger's name is their title. This indicates social status, and might
 # help in the prediction of survivability.
@@ -51,33 +54,62 @@ def extractTicket(df):
         return '?'
 
 # Runs through the extraction functions above in order to extract only the important information from certain data columns.
-def extractImportant(df):
+def fixData(df):
+    # Replace passenger names with titles.
     df['Name'] = extractTitle(df['Name'])
+
+    # Replace 'male' with 0 and 'female' with 1 in 'Sex' column.
+    df['Sex'] = pd.Series(np.where(df['Sex'] == 'male', 0, 1), name = 'Sex')
+
+    # Extract important cabin info.
     df['Cabin'] = extractCabin(df['Cabin'])
+
+    # Extract important ticket info.
     df['Ticket'] = df['Ticket'].map(extractTicket)
+
+    # Replace NaN with mean of entire data set.
     df['Age'] = df['Age'].fillna(df['Age'].mean())
     df['Fare'] = df['Fare'].fillna(df['Fare'].mean())
+
     return df
+
+# Create a single pandas.DataFrame object which contains all the data we'll be using as input.
+# Every column is a separate input node.
+def concatData(df):
+    # Separate columns for every possible attribute value.
+    # Example column names: 'Title_Mr', 'Title_Ms', 'Title_Upper', etc...
+    # Row values = 0 if false, 1 if true.
+    pclass = pd.get_dummies(df['Pclass'], prefix = 'Pclass')
+    title = pd.get_dummies(df['Name'], prefix = 'Title')
+    cabin = pd.get_dummies(df['Cabin'], prefix = 'Cabin')
+    ticket = pd.get_dummies(df['Ticket'], prefix = 'Ticket')
+    embarked = pd.get_dummies(df['Embarked'], prefix = 'Embarked')
+
+    # This determines what values we end up using as input nodes.
+    # Mess with this if you want to see the difference in accuracy % based on what you use as input.
+    return pd.concat([pclass, title, df['Sex'], df['Age'], df['SibSp'], df['Parch'], ticket, df['Fare'], cabin, embarked], axis = 1)
 
 def main():
     # Import training and testing data into pandas.DataFrame objects.
     train = pd.read_csv('titanic/rawdata/train.csv')
     test = pd.read_csv('titanic/rawdata/test.csv')
-    train = extractImportant(train)
+    
+    train = fixData(train)
+    test = fixData(test)
     mlp = perceptron.multiLayer(1)
 
+    trainData = concatData(train)
+    testData = concatData(test)
 
-    # 2 columns. Each possible 'Sex' value. 1 if true, 0 if false.
-    sex = pd.get_dummies(train['Sex'], prefix = 'Sex')
+    # Ensure that both the training and testing dataframes have the same columns.
+    # If we're adding any new columns through this, make all values in that column = 0.
+    trainData, testData = trainData.align(testData, join='outer', fill_value = 0, axis = 1)
 
-    # 5 columns. Each possible 'Title' value. 1 if true, 0 if false.
-    title = pd.get_dummies(train['Name'], prefix = 'Title')
+    # Run the training and testing data through an Sklearns model.
+    model = SVC()
+    model.fit(trainData, train['Survived'])
+    print(model.score(trainData, train['Survived']), model.score(testData, test['Survived']))
 
-    # 9 columns. Each possible 'Cabin' value. 1 if true, 0 if false.
-    cabin = pd.get_dummies(train['Cabin'], prefix = 'Cabin')
-
-    # 31 columns. Each possible 'Ticket' value. 1 if true, 0 if false.
-    ticket = pd.get_dummies(train['Ticket'], prefix = 'Ticket')
  #   print(train['Sex'], "\n\n", train['Name'], "\n\n", train['Cabin'], "\n\n", train['Ticket'])
 
 #    print(train['Ticket'][0])  
