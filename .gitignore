@@ -4,3 +4,6 @@ env/
 *.sw*
 __pycache__
 .vscode/
+# Notes
+notes.txt
+*~
