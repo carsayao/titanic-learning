@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import perceptron
 import enum
+import matplotlib.pyplot as plt
 
 # The only important aspect of each passenger's name is their title.
 # This indicates social status, and might help in the prediction
@@ -123,6 +124,60 @@ def main():
     trainData, testData, train, test = Read().read()
     print(train.shape)
     print(test.shape)
+    ## If you run this main() by itself, it'll give you some pretty graphs
+    df = pd.read_csv("titanic/rawdata/train.csv")
+    fig = plt.figure(figsize = (20,10))
+    
+    plt.subplot2grid((2,3), (0,0))
+    df.Survived.value_counts(normalize=True).plot(kind="bar", alpha=0.5)
+    plt.title("Survived")
+#    plt.show()
+
+    plt.subplot2grid((2,3), (0,1))
+    plt.scatter(df.Survived, df.Age, alpha=0.1)
+    plt.title("Age with respect to survivability")
+
+    plt.subplot2grid((2,3), (0,2))
+    df.Pclass.value_counts(normalize=True).plot(kind="bar", alpha = 0.5)
+    plt.title("Class")
+
+#    plt.show()
+
+    plt.subplot2grid((2,3), (1,0), colspan=2)
+    for x in [1,2,3]:
+        df.Age[df.Pclass == x].plot(kind="kde")
+    plt.title("Class with respect to age")
+    plt.legend(("1st", "2nd", "3rd"))
+
+    plt.subplot2grid((2,3), (1,2))
+    df.Embarked.value_counts(normalize=True).plot(kind="bar", alpha = 0.5)
+    plt.title("Embarked")
+
+    plt.subplot2grid((3,4), (0,0))
+    df.Survived.value_counts(normalize=True).plot(kind="bar", alpha=0.5)
+    plt.title("Survived")
+
+   # plt.show()
+
+    plt.subplot2grid((3,4), (0,1))
+    df.Survived[df.Sex == "male"].value_counts(normalize=True).plot(kind="bar", alpha=0.5)
+    plt.title("Men that survived")
+
+    plt.subplot2grid((3,4), (0,2))
+    df.Survived[df.Sex == "female"].value_counts(normalize=True).plot(kind="bar", alpha=0.5, color = "m")
+    plt.title("Women that survived")
+
+    plt.subplot2grid((3,4), (0,3))
+    df.Sex[df.Survived == 1].value_counts(normalize=True).plot(kind="bar", alpha=0.5, color = ['m', 'b'])
+    plt.title("Sex of survivors")
+
+    plt.clf() # clear the plot
+    plt.subplot2grid((3,4), (1,0), colspan=4)
+    for x in [1,2,3]:
+        df.Survived[df.Pclass == x].plot(kind="kde")
+    plt.title("Class with respect to Survival")
+    plt.legend(("1st", "2nd", "3rd"))
+    plt.show() # show the plot
 
 if __name__ == "__main__":
     main()

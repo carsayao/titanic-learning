@@ -32,46 +32,59 @@ def main():
     model_Bern = BernoulliNB()
     model_MNB = MultinomialNB()
     model_MLP = MLPClassifier(hidden_layer_sizes=(n,n,n), activation='logistic', max_iter=2000)
+    testScore = 0
+    targetLabels = train['Survived'].values
+    testLabels = test['Survived'].values
+
+
+    # just uncomment the data you want to use
+
+    #trainFeatures = trainData
+    #testFeatures = testData
+
+    trainFeatures = train[["Pclass", "Age", "Sex", "Fare"]].values
+    testFeatures = test[["Pclass", "Age", "Sex", "Fare"]].values
+
     # 3 hidden layers (n, n, n)
     model_Perceptron = Perceptron(n_iter_no_change= 10)
 
-    model.fit(trainData, train['Survived'])
-    model_GNB.fit(trainData, train['Survived'])
-    model_Bern.fit(trainData, train['Survived'])
-    model_MNB.fit(trainData, train['Survived'])
-    model_MLP.fit(trainData, train['Survived'])
-    model_Perceptron.fit(trainData, train['Survived'])
+    model.fit(trainFeatures, targetLabels)
+    model_GNB.fit(trainFeatures, targetLabels)
+    model_Bern.fit(trainFeatures, targetLabels)
+    model_MNB.fit(trainFeatures, targetLabels)
+    model_MLP.fit(trainFeatures, targetLabels)
+    model_Perceptron.fit(trainFeatures, targetLabels)
 
     # Let's test a few different models ..
   
     # Now do support vector machine
-    trainScore = model.score(trainData, train['Survived'])*100
-    testScore = model.score(testData, test['Survived'])*100
+    trainScore = model.score(trainFeatures, targetLabels)*100
+    testScore = model.score(testFeatures, testLabels)*100
     print("Support vector results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do Gaussian Naive Bayes
-    trainScore = model_GNB.score(trainData, train['Survived'])*100
-    testScore = model_GNB.score(testData, test['Survived'])*100
+    trainScore = model_GNB.score(trainFeatures, targetLabels)*100
+    testScore = model_GNB.score(testFeatures, testLabels)*100
     print("Gaussian NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do Bernoulli Naive Bayes
-    trainScore = model_Bern.score(trainData, train['Survived'])*100
-    testScore = model_Bern.score(testData, test['Survived'])*100
+    trainScore = model_Bern.score(trainData, targetLabels)*100
+    testScore = model_Bern.score(testData, testLabels)*100
     print("Bernoulli NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do Multinomial Naive Bayes
-    trainScore = model_MNB.score(trainData, train['Survived'])*100
-    testScore = model_MNB.score(testData, test['Survived'])*100
+    trainScore = model_MNB.score(trainData, targetLabels)*100
+    testScore = model_MNB.score(testData, testLabels)*100
     print("Multinomial NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do MLP
-    trainScore = model_MLP.score(trainData, train['Survived'])*100
-    testScore = model_MLP.score(testData, test['Survived'])*100
+    trainScore = model_MLP.score(trainFeatures, targetLabels)*100
+    testScore = model_MLP.score(testFeatures, testLabels)*100
     print("Multi-Layer Perceptron results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
     
     # Now do Perceptron
-    trainScore = model_Perceptron.score(trainData, train['Survived'])*100
-    testScore = model_Perceptron.score(testData, test['Survived'])*100
+    trainScore = model_Perceptron.score(trainFeatures, targetLabels)*100
+    testScore = model_Perceptron.score(testFeatures, testLabels)*100
     print("Perceptron Learning Algorithm results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%\n\n\n")
 
     # Some PCA magic, reduce down to n parameters
@@ -81,14 +94,14 @@ def main():
     testData = pca.transform(testData)
 
     model_MLP.fit(trainData, train['Survived'])
-    trainScore = model_MLP.score(trainData, train['Survived'])*100
-    testScore = model_MLP.score(testData, test['Survived'])*100
+    trainScore = model_MLP.score(trainData, targetLabels)*100
+    testScore = model_MLP.score(testData, testLabels)*100
     print("(PCA) Multi-Layer Perceptron results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
     
-    model_Perceptron.fit(trainData, train['Survived'])
-    trainScore = model_Perceptron.score(trainData, train['Survived'])*100
-    testScore = model_Perceptron.score(testData, test['Survived'])*100
-    print("Perceptron Learning Algorithm results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%\n\n\n")
+    model_Perceptron.fit(trainData, targetLabels)
+    trainScore = model_Perceptron.score(trainData, targetLabels)*100
+    testScore = model_Perceptron.score(testData, testLabels)*100
+    print("(PCA) Perceptron Learning Algorithm results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%\n\n\n")
 
 
 if __name__ == "__main__":
