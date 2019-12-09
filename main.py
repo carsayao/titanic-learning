@@ -15,6 +15,19 @@ from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import Perceptron
 
+def plot(array, predicts, mode, algorithm, num):
+    fig = plt.figure(figsize = (8,8))
+    ax = fig.add_subplot(1,1,1)
+    #ax.set_title("n="+str(num)+"  PCA")
+    ax.set_title(mode + " " + algorithm + " n="+str(num))
+#    colors = itertools.cycle(['r', 'g', 'b'])
+    scatter = ax.scatter(array[:, 0], array[:, 1], c=predicts, alpha = 0.5)
+    legend = ax.legend(*scatter.legend_elements(), loc="upper right")
+    ax.add_artist(legend)
+
+    plt.savefig("titanic_" + mode + "_" + algorithm + "_"  + str(num) + ".png")
+    plt.close(fig)
+
 def dropData(trainData, testData):
 
     """ Data can be put back into the dataframe by commenting out the assignments
@@ -151,6 +164,7 @@ def main():
     testScore = model_MLP.score(testData, test['Survived'])*100
     print("(PCA) Multi-Layer Perceptron results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
     #predicts = pca.score_samples(testData)
+    plot(testData, test['Survived'], "PCA", "MLP", numComp)
     
     model_Perceptron.fit(trainData, train['Survived'])
     trainScore = model_Perceptron.score(trainData, train['Survived'])*100
