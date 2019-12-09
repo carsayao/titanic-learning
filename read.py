@@ -98,7 +98,7 @@ class Read:
         # This determines what values we end up using as input nodes.
         # Mess with this if you want to see the difference in accuracy %
         # based on what you use as input.
-        return pd.concat([pclass, title, df['Sex'], df['Age'], df['SibSp'],
+        return pd.concat([df['Pclass'], title, df['Sex'], df['Age'], df['SibSp'],
                           df['Parch'], ticket, df['Fare'], cabin, embarked],
                           axis = 1)
     

@@ -43,6 +43,7 @@ def originToVal(self, origin):
     else:
         weight = 0
         print("originToVal: NO ORIGIN CITY")
+    return weight
 
 class multiLayer(object):
     inputNodes = [] # 1-D array of inputs, supplied from a function in main

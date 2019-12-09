@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import perceptron
 import enum
+import matplotlib.pyplot as plt
 
 # Lazy algorithms
 from sklearn.svm import SVC
@@ -13,11 +14,71 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Perceptron
 
+def dropData(trainData, testData):
 
+    """ Data can be put back into the dataframe by commenting out the assignments
+    """
+    # this block drops ALL cabin data from the data frame
+    cols = [c for c in trainData.columns if c[:5] != 'Cabin']
+#    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:5] != 'Cabin']
+#    testData = testData[cols]
+
+    # drops ALL embarkment locations
+    cols = [c for c in trainData.columns if c[:8] != 'Embarked']
+    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:8] != 'Embarked']
+    testData = testData[cols]
+
+    # drops ALL tickets
+    cols = [c for c in trainData.columns if c[:6] != 'Ticket']
+    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:6] != 'Ticket']
+    testData = testData[cols]
+
+    # drops ALL sex
+    cols = [c for c in trainData.columns if c[:3] != 'Sex']
+#    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:3] != 'Sex']
+#    testData = testData[cols]
+    
+    # drops ALL Fare
+    cols = [c for c in trainData.columns if c[:4] != 'Fare']
+    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:4] != 'Fare']
+    testData = testData[cols]
+
+    # drop sibling/spouse
+#    cols = [c for c in trainData.columns if c[:5] != 'SibSp']
+    trainData = trainData[cols]
+#    cols = [c for c in testData.columns if c[:5] != 'SibSp']
+    testData = testData[cols]
+
+    #drop parch
+    cols = [c for c in trainData.columns if c[:5] != 'Parch']
+#    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:5] != 'Parch']
+#    testData = testData[cols]
+
+    #drop Age
+    cols = [c for c in trainData.columns if c[:3] != 'Age']
+    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:3] != 'Age']
+    testData = testData[cols]
+
+    #drop title
+    cols = [c for c in trainData.columns if c[:5] != 'Title']
+    trainData = trainData[cols]
+    cols = [c for c in testData.columns if c[:5] != 'Title']
+    testData = testData[cols]
+
+
+
+    return trainData, testData
 def main():
 
     # Number of hiddens
-    n=5
+    n=10
 
     # Instance of Read class to read in data
     trainData, testData, train, test = Read().read()
@@ -31,20 +92,22 @@ def main():
     model_GNB = GaussianNB()
     model_Bern = BernoulliNB()
     model_MNB = MultinomialNB()
-    model_MLP = MLPClassifier(hidden_layer_sizes=(n,n,n), activation='logistic', max_iter=2000)
+    model_MLP = MLPClassifier(hidden_layer_sizes=(n,n), activation='logistic', max_iter=2000)
     testScore = 0
     targetLabels = train['Survived'].values
     testLabels = test['Survived'].values
 
-
+    trainData, testData = dropData(trainData, testData)
     # just uncomment the data you want to use
 
-    #trainFeatures = trainData
-    #testFeatures = testData
+    trainFeatures = trainData
+    testFeatures = testData
 
-    trainFeatures = train[["Pclass", "Age", "Sex", "Fare"]].values
-    testFeatures = test[["Pclass", "Age", "Sex", "Fare"]].values
-
+#    trainFeatures = train[["Pclass", "Age", "Sex", "Fare"]].values
+#    testFeatures = test[["Pclass", "Age", "Sex", "Fare"]].values
+  
+    print(trainFeatures.shape)
+    print(trainFeatures)
     # 3 hidden layers (n, n, n)
     model_Perceptron = Perceptron(n_iter_no_change= 10)
 
@@ -68,13 +131,13 @@ def main():
     print("Gaussian NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do Bernoulli Naive Bayes
-    trainScore = model_Bern.score(trainData, targetLabels)*100
-    testScore = model_Bern.score(testData, testLabels)*100
+    trainScore = model_Bern.score(trainFeatures, targetLabels)*100
+    testScore = model_Bern.score(testFeatures, testLabels)*100
     print("Bernoulli NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do Multinomial Naive Bayes
-    trainScore = model_MNB.score(trainData, targetLabels)*100
-    testScore = model_MNB.score(testData, testLabels)*100
+    trainScore = model_MNB.score(trainFeatures, targetLabels)*100
+    testScore = model_MNB.score(testFeatures, testLabels)*100
     print("Multinomial NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
 
     # Now do MLP
@@ -88,20 +151,54 @@ def main():
     print("Perceptron Learning Algorithm results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%\n\n\n")
 
     # Some PCA magic, reduce down to n parameters
-    pca = PCA(n_components=4)
-    pca.fit(trainData)
-    trainData = pca.transform(trainData)
-    testData = pca.transform(testData)
+    """ Everything below this point is using PCA for dimensionality reduction in the data
 
-    model_MLP.fit(trainData, train['Survived'])
-    trainScore = model_MLP.score(trainData, targetLabels)*100
-    testScore = model_MLP.score(testData, testLabels)*100
+    """
+    numComp = 8
+    pca = PCA(n_components=numComp)
+    pca.fit(trainFeatures)
+    trainFeatures = pca.transform(trainFeatures)
+    testFeatures = pca.transform(testFeatures)
+    print(trainFeatures.shape)
+
+    model.fit(trainFeatures, targetLabels)
+    model_GNB.fit(trainFeatures, targetLabels)
+    model_Bern.fit(trainFeatures, targetLabels)
+
+    # Now do support vector machine
+    trainScore = model.score(trainFeatures, targetLabels)*100
+    testScore = model.score(testFeatures, testLabels)*100
+    print("Support vector results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
+
+    # Now do Gaussian Naive Bayes
+    trainScore = model_GNB.score(trainFeatures, targetLabels)*100
+    testScore = model_GNB.score(testFeatures, testLabels)*100
+    print("Gaussian NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
+
+    # Now do Bernoulli Naive Bayes
+    trainScore = model_Bern.score(trainFeatures, targetLabels)*100
+    testScore = model_Bern.score(testFeatures, testLabels)*100
+    print("Bernoulli NB results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
+
+    model_MLP.fit(trainFeatures, targetLabels)
+    trainScore = model_MLP.score(trainFeatures, targetLabels)*100
+    testScore = model_MLP.score(testFeatures, testLabels)*100
     print("(PCA) Multi-Layer Perceptron results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%")
     
-    model_Perceptron.fit(trainData, targetLabels)
-    trainScore = model_Perceptron.score(trainData, targetLabels)*100
-    testScore = model_Perceptron.score(testData, testLabels)*100
+    model_Perceptron.fit(trainFeatures, targetLabels)
+    trainScore = model_Perceptron.score(trainFeatures, targetLabels)*100
+    testScore = model_Perceptron.score(testFeatures, testLabels)*100
     print("(PCA) Perceptron Learning Algorithm results:\n", "Train: ", trainScore, "%", "Test: ", testScore, "%\n\n\n")
+
+
+
+    fig = plt.figure(figsize = (8,8))
+    ax = fig.add_subplot(1,1,1)
+    ax.set_title("n="+str(numComp)+"  PCA")
+#    colors = itertools.cycle(['r', 'g', 'b'])
+    plt.scatter(trainFeatures[:, 0], trainFeatures[:, 1], alpha = 0.5)
+    print(trainFeatures)
+    plt.show()
 
 
 if __name__ == "__main__":
